@@ -10,6 +10,16 @@
               <v n="TextDefault">"Move Relative"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
+            <o>
+              <v n="TextID">"687"</v>
+              <v n="TextDefault">"Move Velocity"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"173"</v>
+              <v n="TextDefault">"Stop"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
           </l>
           <l n="Languages" t="ArrayList" />
           <v n="GuidInit">{c2ddad1f-08df-4ff0-892a-6c733daaaf75}</v>

@@ -5,18 +5,16 @@
 VAR
 	fbAxis: FB_Axis;
 	xState: E_MC_State;
-	state : BYTE;
-	bMove : bool;
+	state : BYTE;	
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[gHW.Axis.ReadStatus();
+      <ST><![CDATA[fbAxis.Axis.ReadStatus(); //HMI := gHMI.AxisHMI_1
 
 CASE xState OF
-	MCSTATE_Init:
-		fbAxis(Axis := gHW.Axis);//HMI := gHMI.AxisHMI_1
+	MCSTATE_Init:		
 		fbAxis.Enable(FALSE);		 
-		IF gHW.Axis.Status.Error THEN
+		IF fbAxis.Axis.Status.Error THEN
 			xState := MCSTATE_Error;
 		ELSE	
 			xState := MCSTATE_PowerOn;
@@ -28,12 +26,35 @@ CASE xState OF
 			xState := MCSTATE_MoveRel;
 		END_IF
 		
-	MCSTATE_Idle:
-		//IF HMI.MoveRel THEN
-		IF bMove THEN
+	MCSTATE_Idle:		
+		IF gHMI.bMoveRel THEN
 			xState:= MCSTATE_MoveRel;
 		END_IF
+		IF gHMI.bMoveVel THEN
+			xState:= MCSTATE_MoveVel;
+		END_IF
+		IF gHMI.bStop THEN
+			xState:= MCSTATE_Stop;
+		END_IF
 		
+	MCSTATE_MoveVel:	
+		fbAxis.MoveVel(bExecute := TRUE, Velocity := 100, Direction := MC_Positive_Direction, 						
+						acceleration := 1000, Deceleration := 1500, Jerk:= 0);	
+		IF fbAxis.moveVels.Active THEN
+			fbAxis.MoveVel(bExecute := FALSE, Velocity := 100, Direction := MC_Positive_Direction, 
+						acceleration := 1000, Deceleration := 1500, Jerk:= 0);	
+		END_IF
+		IF gHMI.bStop THEN
+			xState:= MCSTATE_Stop;
+		END_IF
+		
+	MCSTATE_Stop:		
+		fbAxis.Stop(bExecute := TRUE, Deceleration := 1500, Jerk:= 0);
+		IF fbAxis.stops.Done  THEN
+			fbAxis.Stop(bExecute := FALSE, Deceleration := 1500, Jerk:= 0);			
+			xState := MCSTATE_Idle;
+		END_IF
+				
 	MCSTATE_MoveRel:
 		fbAxis.MoveRel(bExecute:=TRUE,relAngle:=100);		 
 		IF fbAxis.moveRels.Done THEN
@@ -46,7 +67,6 @@ END_CASE]]></ST>
       <LineId Id="57" Count="1" />
       <LineId Id="18" Count="0" />
       <LineId Id="17" Count="0" />
-      <LineId Id="9" Count="0" />
       <LineId Id="20" Count="0" />
       <LineId Id="23" Count="0" />
       <LineId Id="48" Count="0" />
@@ -55,11 +75,29 @@ END_CASE]]></ST>
       <LineId Id="65" Count="0" />
       <LineId Id="38" Count="0" />
       <LineId Id="60" Count="4" />
-      <LineId Id="34" Count="1" />
+      <LineId Id="34" Count="0" />
       <LineId Id="40" Count="0" />
       <LineId Id="36" Count="0" />
       <LineId Id="33" Count="0" />
+      <LineId Id="72" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="86" Count="1" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="67" Count="1" />
       <LineId Id="37" Count="0" />
+      <LineId Id="77" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="79" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="82" Count="0" />
       <LineId Id="26" Count="1" />
       <LineId Id="31" Count="0" />
       <LineId Id="66" Count="0" />

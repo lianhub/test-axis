@@ -4,6 +4,9 @@
     <Declaration><![CDATA[{attribute 'qualified_only'}
 VAR_GLOBAL
 	AxisHMI_1: ST_HMI_Axis;
+	bMoveRel : BOOL;
+	bMoveVel : BOOL;
+	bStop : BOOL;
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>

@@ -11,6 +11,7 @@
 	MCSTATE_Zero,
 	MCSTATE_MoveAbs,
 	MCSTATE_MoveRel,
+	MCSTATE_MoveVel,
 	MCSTATE_Jog,
 	MCSTATE_Inch,
 	MCSTATE_Home,

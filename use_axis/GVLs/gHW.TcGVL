@@ -3,7 +3,7 @@
   <GVL Name="gHW" Id="{20abb9f4-0217-4e7d-9a2f-1ceca04bc222}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
 VAR_GLOBAL
-		Axis: AXIS_REF;
+		//Axis: AXIS_REF;
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>
