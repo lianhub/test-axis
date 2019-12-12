@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.0">
+  <DUT Name="ST_HMI_Axis" Id="{d265f001-374a-4f86-97c9-e4f60c08b8cd}">
+    <Declaration><![CDATA[TYPE ST_HMI_Axis :
+STRUCT
+	MoveRel: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

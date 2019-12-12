@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.0">
+  <POU Name="FB_axis" Id="{4468d1f4-b80f-4453-9c9f-d05c198a1318}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_axis
+VAR_INPUT
+	//bStart							: BOOL;		
+END_VAR
+VAR_OUTPUT
+	power	: ST_McOutputs;	
+	resets	: ST_McOutputs;	
+	estops	: ST_McOutputs;	
+	stops	: ST_McOutputs;	
+	driveResets	: ST_McOutputs;	
+	diags		: ST_McOutputs;	
+	diagNumber	: UDINT;
+	moveRels  : ST_McOutputs;
+	moveVels  : ST_McOutputs;
+	moveAbses : ST_McOutputs;
+	readVels	 : ST_McOutputs;
+	actVel								: LREAL;
+	readPoses	 : ST_McOutputs;
+	actPos								: LREAL;
+END_VAR
+VAR_IN_OUT
+	Axis: AXIS_REF;
+END_VAR
+VAR
+	//eState		: axisState;
+	mcPower		: MC_Power;
+	mcReset		: MC_Reset;
+	//mcDriveReset: FB_SoEReset;
+	mcMoveAbs	: MC_MoveAbsolute;
+	mcStop		: MC_Stop;
+	mcMoveRel	: MC_MoveRelative;
+	//mcReadDiag	: FB_SoEReadDiagNumber;
+	mcReadVel	: MC_ReadActualVelocity;
+	mcReadPos	: MC_ReadActualPosition;
+	mcMoveVel	: MC_MoveVelocity;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*Axis.ReadStatus();
+
+IF axis.Status.Error THEN
+	eState := ERROR;	
+END_IF
+	
+
+CASE eState OF
+	INIT:
+	           //gHW.errAck := TRUE; 
+	    mcReset.Execute := FALSE;
+		mcPower.Enable := FALSE;
+		mcPower.Enable_Negative:= FALSE;
+		mcPower.Enable_Positive:= FALSE;
+		eState := ENABLE;
+		
+	ENABLE:		
+	         //gHW.errAck := FALSE;
+		mcPower.Enable := TRUE;
+		mcPower.Enable_Negative:= TRUE;
+		mcPower.Enable_Positive:= TRUE;
+		IF mcPower.Status THEN
+			eState := READY;
+		END_IF	
+		
+	READY:
+		IF bStart THEN
+			eState:= ESTOP;
+		END_IF
+		
+	ESTOP:		
+		mcMoveRel.Distance := 100;
+		mcMoveRel.Velocity := 100;
+		mcMoveRel.Execute := TRUE;
+		IF mcMoveRel.Done THEN
+			mcMoveRel.Execute := FALSE;
+			eState := READY;
+		END_IF	
+		
+	ERROR:
+		mcReset.Execute := TRUE;
+		         //gHW.errAck := TRUE; 
+		//mcPower.Enable := FALSE;
+		//mcPower.Enable_Negative:= FALSE;
+		//mcPower.Enable_Positive:= FALSE;
+	    IF mcReset.Done THEN
+			mcReset.Execute := FALSE;	
+			eState := INIT;
+		//eState := DISABLED;
+		END_IF
+END_CASE	
+
+mcPower(Axis:= Axis);
+mcMoveRel(Axis:= Axis);
+mcReset(Axis:= Axis);*)]]></ST>
+    </Implementation>
+    <Method Name="Enable" Id="{fafdec5a-2753-495e-9cdd-95c4346a412f}">
+      <Declaration><![CDATA[METHOD Enable : BOOL
+VAR_INPUT
+	bEnable : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcPower(
+	Axis := Axis,
+	Enable := bEnable,
+	Enable_Positive := bEnable,
+	Enable_Negative := bEnable,
+	BufferMode := MC_Aborting,
+	Override := 100,
+	Status => power.Done,
+	Error => power.Error
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="eStop" Id="{02e22e27-1058-44a9-8b64-7f96890cb740}">
+      <Declaration><![CDATA[METHOD eStop : BOOL
+VAR_INPUT
+	bExecute : BOOL;
+END_VAR
+VAR
+	EStopDeceleration		: LREAL := 5000;
+	EStopJerk				: LREAL := 20000;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcStop(
+	Axis := Axis,
+	Execute := bExecute,
+	Deceleration := EStopDeceleration,
+	Jerk := EStopJerk,
+	Done => estops.Done
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MoveAbs" Id="{5bf6f79b-6023-4c7c-b620-143a2d148800}">
+      <Declaration><![CDATA[METHOD MoveAbs : BOOL
+VAR_INPUT
+	bExecute 			: BOOL;
+	targetAngle 		: LREAL;
+	velocityIncline		: LREAL;
+END_VAR
+VAR	
+	accelerationIncline						: LREAL := 1000;
+	decelerationIncline						: LREAL := 1500;
+	jerkIncline								: LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcMoveAbs(	
+	Axis 		:= Axis,
+	Execute 	:= bExecute,	
+	Position			:= targetAngle,
+	Velocity 			:= velocityIncline,//cali
+	Acceleration 		:= accelerationIncline,
+	Deceleration 		:= decelerationIncline,
+	Jerk 				:= jerkIncline,	
+	Done 			=> moveAbses.Done,
+	Busy 			=> moveAbses.Busy,
+	Active 			=> moveAbses.Active,
+	CommandAborted 	=> moveAbses.CommandAborted,
+	Error 			=> moveAbses.Error,
+	ErrorID 		=> moveAbses.ErrorID,	
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MoveRel" Id="{96010620-48b2-41da-a2af-748d554297fb}">
+      <Declaration><![CDATA[METHOD MoveRel : BOOL
+VAR_INPUT
+	bExecute : BOOL;
+	relAngle : LREAL;
+END_VAR
+VAR
+	velocityIncline							: LREAL := 100;
+	accelerationIncline						: LREAL := 1000;
+	decelerationIncline						: LREAL := 1500;
+	jerkIncline								: LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcMoveRel(
+	Axis := Axis,
+	Execute := bExecute,
+	Distance			:= relAngle,
+	Velocity 			:= velocityIncline,//cali
+	Acceleration 		:= accelerationIncline,
+	Deceleration 		:= decelerationIncline,
+	Jerk 				:= jerkIncline,	
+	Done 			=> moveRels.Done,
+	Busy 			=> moveRels.Busy,
+	Active 			=> moveRels.Active,
+	CommandAborted 	=> moveRels.CommandAborted,
+	Error 			=> moveRels.Error,
+	ErrorID 		=> moveRels.ErrorID
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MoveVel" Id="{312f59aa-a034-40bb-82d8-2b12d481da77}">
+      <Declaration><![CDATA[METHOD MoveVel : BOOL
+VAR_INPUT
+	bExecute 		: BOOL;
+	velocity		: LREAL;
+	acceleration	: LREAL;
+	deceleration	: LREAL;
+	jerk			: LREAL;
+	Direction		: MC_Direction;
+END_VAR
+VAR
+	//BufferMode: MC_Aborting
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcMoveVel(	
+	Axis 		:= Axis,
+	Execute 	:= bExecute,		
+	Velocity 			:= velocity*1,//speedCalibrationFactorL,//cali
+	Acceleration 		:= acceleration,
+	Deceleration 		:= deceleration,
+	Jerk 				:= jerk,	
+	BufferMode 			:= MC_Aborting,
+	InVelocity 		=> moveVels.Done,
+	Busy 			=> moveVels.Busy,
+	Active 			=> moveVels.Active,
+	CommandAborted 	=> moveVels.CommandAborted,
+	Error 			=> moveVels.Error,
+	ErrorID 		=> moveVels.ErrorID,	
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ReadPos" Id="{b789b23d-68f6-4e86-8272-36cde9f272d7}">
+      <Declaration><![CDATA[METHOD ReadPos : BOOL
+VAR_INPUT
+	bEnable : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcReadPos (
+	Axis := Axis,
+	Enable := bEnable,
+	Busy => readPoses.Busy,
+	Position => ActPos
+	//Error => diagNumberError,
+	//AdsErrId => diagNumberAdsErrorID,
+	//SercosErrId => diagNumberSercosErrorID 
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ReadVel" Id="{56af1527-0690-4573-909e-0b3ac89fce64}">
+      <Declaration><![CDATA[METHOD ReadVel : BOOL
+VAR_INPUT
+	bEnable : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcReadVel (
+	Axis := Axis,
+	Enable := bEnable,
+	Busy => readVels.Busy,
+	ActualVelocity => ActVel
+	//Error => diagNumberError,
+	//AdsErrId => diagNumberAdsErrorID,
+	//SercosErrId => diagNumberSercosErrorID 
+);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Reset" Id="{2469fb7d-06dc-40d0-95f8-bc65e9decc8a}">
+      <Declaration><![CDATA[METHOD Reset : BOOL
+VAR_INPUT
+	bExecute : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcReset(
+	Axis := Axis,
+	Execute := bExecute,
+	Done => resets.Done,
+	Error => resets.Error
+);
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Stop" Id="{a0608013-dbe8-4f07-943e-03ad437eb627}">
+      <Declaration><![CDATA[METHOD Stop : BOOL
+VAR_INPUT
+	bExecute : BOOL;
+	Deceleration		: LREAL;
+	Jerk				: LREAL;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[mcStop(
+	Axis := Axis,
+	Execute := bExecute,
+	Deceleration := Deceleration,
+	Jerk := Jerk,
+	Done => stops.Done
+);]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_axis">
+      <LineId Id="21" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="24" Count="2" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="27" Count="2" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="30" Count="19" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="137" Count="1" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="114" Count="3" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="50" Count="2" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="92" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.Enable">
+      <LineId Id="5" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="2" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.eStop">
+      <LineId Id="5" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.MoveAbs">
+      <LineId Id="8" Count="13" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.MoveRel">
+      <LineId Id="8" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="10" Count="4" />
+      <LineId Id="16" Count="5" />
+      <LineId Id="31" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.MoveVel">
+      <LineId Id="20" Count="2" />
+      <LineId Id="24" Count="3" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="28" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.ReadPos">
+      <LineId Id="7" Count="7" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.ReadVel">
+      <LineId Id="7" Count="2" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="12" Count="2" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_axis.Reset">
+      <LineId Id="5" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="14" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_axis.Stop">
+      <LineId Id="6" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.0">
+  <DUT Name="E_MC_State" Id="{2dbdafe0-f4ef-4313-bea7-dc02b3bd7f8a}">
+    <Declaration><![CDATA[TYPE E_MC_State :
+(
+	MCSTATE_Init,
+	MCSTATE_NotPowered,
+	MCSTATE_PowerOn,
+	MCSTATE_PowerOff,
+	MCSTATE_Idle,
+	MCSTATE_Zero,
+	MCSTATE_MoveAbs,
+	MCSTATE_MoveRel,
+	MCSTATE_Jog,
+	MCSTATE_Inch,
+	MCSTATE_Home,
+	MCSTATE_Stop,
+	MCSTATE_Error,
+	MCSTATE_Reset,
+	MCSTATE_GearIn,
+	MCSTATE_Geared,
+	MCSTATE_GearOut
+);
+
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

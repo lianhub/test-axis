@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.0">
+  <POU Name="MAIN" Id="{9e1c3995-83c8-4182-bd18-563ee53d3d94}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	fbAxis: FB_Axis;
+	xState: E_MC_State;
+	state : BYTE;
+	bMove : bool;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[gHW.Axis.ReadStatus();
+
+CASE xState OF
+	MCSTATE_Init:
+		fbAxis(Axis := gHW.Axis);//HMI := gHMI.AxisHMI_1
+		fbAxis.Enable(FALSE);		 
+		IF gHW.Axis.Status.Error THEN
+			xState := MCSTATE_Error;
+		ELSE	
+			xState := MCSTATE_PowerOn;
+		END_IF
+		
+	MCSTATE_PowerOn:
+		fbAxis.Enable(TRUE);
+		IF fbAxis.power.Done THEN
+			xState := MCSTATE_MoveRel;
+		END_IF
+		
+	MCSTATE_Idle:
+		//IF HMI.MoveRel THEN
+		IF bMove THEN
+			xState:= MCSTATE_MoveRel;
+		END_IF
+		
+	MCSTATE_MoveRel:
+		fbAxis.MoveRel(bExecute:=TRUE,relAngle:=100);		 
+		IF fbAxis.moveRels.Done THEN
+			fbAxis.MoveRel(bExecute:=FALSE,relAngle:=100);	
+			xState := MCSTATE_Idle;
+		END_IF
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="57" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="60" Count="4" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
