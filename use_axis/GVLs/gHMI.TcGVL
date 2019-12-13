@@ -6,7 +6,10 @@ VAR_GLOBAL
 	AxisHMI_1: ST_HMI_Axis;
 	bMoveRel : BOOL;
 	bMoveVel : BOOL;
+	bMoveVel2 : BOOL;
 	bStop : BOOL;
+	vel 	: LREAL:=100;
+	vel2 	: LREAL:=500;
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>
