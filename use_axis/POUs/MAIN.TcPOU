@@ -8,8 +8,8 @@ VAR
 	state : BYTE;	
 	status : ST_AxisStatus;
 	mcStatus : MC_ReadStatus;
-	velo : LREAL;
-	be: BOOL;
+	velo 	: LREAL;
+	bRunVel	: BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -34,43 +34,34 @@ CASE xState OF
 	MCSTATE_Idle:		
 		IF gHMI.bMoveRel THEN
 			xState:= MCSTATE_MoveRel;
-		END_IF			
-						fbAxis.MoveVel(bExecute := be, Velocity := velo, Direction := MC_Positive_Direction, 						
-						acceleration := 1000, Deceleration := 1500, Jerk:= 0);		
+		END_IF										
 		IF gHMI.bMoveVel THEN
-			velo := gHMI.vel;
-			xState:= MCSTATE_MoveVel;  be := TRUE;
-						fbAxis.MoveVel(bExecute := be, Velocity := velo, Direction := MC_Positive_Direction, 						
-						acceleration := 1000, Deceleration := 1500, Jerk:= 0);
+			velo := gHMI.vel;		bRunVel := TRUE;			
+			xState:= MCSTATE_MoveVel;  			
 		END_IF
 		IF gHMI.bMoveVel2 THEN
-			velo := gHMI.vel2;
-			xState:= MCSTATE_MoveVel; be := TRUE;
-						fbAxis.MoveVel(bExecute := be, Velocity := velo, Direction := MC_Positive_Direction, 						
-						acceleration := 1000, Deceleration := 1500, Jerk:= 0);
+			velo := gHMI.vel2; 		bRunVel := TRUE;		
+			xState:= MCSTATE_MoveVel; 				
 		END_IF
 		IF gHMI.bStop THEN
 			xState:= MCSTATE_Stop;
 		END_IF
 		
 	MCSTATE_MoveVel:	
-		fbAxis.MoveVel(bExecute := be, Velocity := velo, Direction := MC_Positive_Direction, 						
+		fbAxis.MoveVel(bExecute := bRunVel, Velocity := velo, Direction := MC_Positive_Direction, 						
 						acceleration := 1000, Deceleration := 1500, Jerk:= 0);	
 		IF fbAxis.moveVels.Active OR fbAxis.moveVels.CommandAborted THEN
-			be := FALSE; xState := MCSTATE_Idle;
-			//fbAxis.MoveVel(bExecute := be, Velocity := 100, Direction := MC_Positive_Direction, 
-						//acceleration := 1000, Deceleration := 1500, Jerk:= 0);
-		//ELSE
-		//	be := TRUE;
-		//	fbAxis.MoveVel(bExecute := be, Velocity := velo, Direction := MC_Positive_Direction, 						
-			//			acceleration := 1000, Deceleration := 1500, Jerk:= 0);		
+			bRunvel := FALSE; 				
 		END_IF
 		IF gHMI.bStop THEN
 			xState:= MCSTATE_Stop;
-			fbAxis.Stop(bExecute := FALSE, Deceleration := 1500, Jerk:= 0);	
-			be := FALSE;
-			fbAxis.MoveVel(bExecute := be, Velocity := 100, Direction := MC_Positive_Direction, 
-						acceleration := 1000, Deceleration := 1500, Jerk:= 0);	
+			fbAxis.Stop(bExecute := FALSE, Deceleration := 1500, Jerk:= 0);					
+		END_IF
+		IF gHMI.bMoveVel THEN
+			velo := gHMI.vel;			bRunvel := TRUE;						
+		END_IF
+		IF gHMI.bMoveVel2 THEN
+			velo := gHMI.vel2;			bRunvel := TRUE;						
 		END_IF
 		
 	MCSTATE_Stop:		
@@ -105,17 +96,13 @@ END_CASE]]></ST>
       <LineId Id="40" Count="0" />
       <LineId Id="36" Count="0" />
       <LineId Id="33" Count="0" />
-      <LineId Id="133" Count="0" />
-      <LineId Id="131" Count="0" />
       <LineId Id="72" Count="0" />
       <LineId Id="108" Count="0" />
       <LineId Id="73" Count="0" />
-      <LineId Id="123" Count="1" />
       <LineId Id="70" Count="0" />
       <LineId Id="106" Count="0" />
       <LineId Id="110" Count="0" />
       <LineId Id="107" Count="0" />
-      <LineId Id="125" Count="1" />
       <LineId Id="105" Count="0" />
       <LineId Id="86" Count="1" />
       <LineId Id="85" Count="0" />
@@ -124,18 +111,14 @@ END_CASE]]></ST>
       <LineId Id="67" Count="1" />
       <LineId Id="37" Count="0" />
       <LineId Id="128" Count="0" />
-      <LineId Id="77" Count="1" />
-      <LineId Id="120" Count="0" />
-      <LineId Id="129" Count="0" />
-      <LineId Id="122" Count="0" />
-      <LineId Id="121" Count="0" />
       <LineId Id="75" Count="0" />
       <LineId Id="89" Count="1" />
       <LineId Id="101" Count="0" />
-      <LineId Id="130" Count="0" />
-      <LineId Id="99" Count="1" />
       <LineId Id="88" Count="0" />
+      <LineId Id="146" Count="1" />
+      <LineId Id="149" Count="2" />
       <LineId Id="84" Count="0" />
+      <LineId Id="153" Count="0" />
       <LineId Id="83" Count="0" />
       <LineId Id="79" Count="1" />
       <LineId Id="92" Count="0" />
