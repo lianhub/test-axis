@@ -20,11 +20,12 @@ VAR_OUTPUT
 	actVel								: LREAL;
 	readPoses	 : ST_McOutputs;
 	actPos								: LREAL;
+		lrPositionBias      : LREAL:=12321;
 END_VAR
 VAR_IN_OUT	
-END_VAR
-VAR
 	Axis: AXIS_REF;
+END_VAR
+VAR	
 	//eState		: axisState;
 	mcPower		: MC_Power;
 	mcReset		: MC_Reset;
@@ -36,6 +37,11 @@ VAR
 	mcReadVel	: MC_ReadActualVelocity;
 	mcReadPos	: MC_ReadActualPosition;
 	mcMoveVel	: MC_MoveVelocity;
+	
+	mcSetPos			: MC_SetPosition;
+	mcReadParameter     : MC_ReadParameter;
+    mcWritePersistent    : MC_WriteParameterPersistent;
+	diState         	: DINT :=0;  // State machine variable
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -223,6 +229,15 @@ END_VAR]]></Declaration>
 );]]></ST>
       </Implementation>
     </Method>
+    <Method Name="ReadMCparam" Id="{15325c9c-e33a-4a16-81a5-efa45dbb5811}">
+      <Declaration><![CDATA[METHOD ReadMCparam : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="ReadPos" Id="{b789b23d-68f6-4e86-8272-36cde9f272d7}">
       <Declaration><![CDATA[METHOD ReadPos : BOOL
 VAR_INPUT
@@ -274,6 +289,53 @@ END_VAR
 );
 
 ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SaveBias" Id="{efeb0504-e7ce-44b4-bf37-0d97f16dcde4}">
+      <Declaration><![CDATA[METHOD SaveBias : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE diState OF	
+  0:
+  	diState := 5; // This step is required, 
+				  // as we use 'diState=0' to determine that writing-persistent succeeds!    
+  5:	
+	mcSetPos(Axis:= Axis, Execute:=TRUE, Position :=0);
+	IF NOT mcSetPos.Busy AND NOT mcSetPos.Error THEN
+		mcSetPos(Axis:= Axis, Execute:= FALSE ); 
+		diState := 10;           			
+	END_IF
+			
+  10:
+	mcReadParameter(
+		Axis:= Axis, 
+		Enable:= TRUE, 
+		ParameterNumber:= MC_AxisParameter.AxisEncoderOffset, 
+		ReadMode:= E_ReadMode.READMODE_ONCE
+	);	
+	IF NOT mcReadParameter.Busy AND NOT mcReadParameter.Error THEN       
+		IF mcReadParameter.Valid THEN
+			mcPower(Axis := Axis, Enable := FALSE,	Enable_Positive := FALSE,	Enable_Negative := FALSE);			
+			//disable axis before writing-persistently!
+			lrPositionBias := mcReadParameter.Value;
+			diState := 0;//15;  	                 
+		END_IF
+		mcReadParameter(Axis:= Axis, Enable:= FALSE );
+	END_IF
+  15:
+	diState := 20;  
+	
+  20: //write bias
+	mcWritePersistent(Axis:= Axis, 
+		Execute:= TRUE, ParameterNumber:= MC_AxisParameter.AxisEncoderOffset, Value:= lrPositionBias);  
+		mcWritePersistent.ErrorID;
+	IF NOT mcWritePersistent.Busy AND NOT mcWritePersistent.Error THEN
+		mcWritePersistent(Axis:= Axis, Execute:= FALSE );
+		diState     := 0;        
+	END_IF		
+END_CASE	]]></ST>
       </Implementation>
     </Method>
     <Method Name="Stop" Id="{a0608013-dbe8-4f07-943e-03ad437eb627}">
@@ -353,6 +415,9 @@ END_VAR
       <LineId Id="28" Count="5" />
       <LineId Id="5" Count="0" />
     </LineIds>
+    <LineIds Name="FB_axis.ReadMCparam">
+      <LineId Id="5" Count="0" />
+    </LineIds>
     <LineIds Name="FB_axis.ReadPos">
       <LineId Id="7" Count="7" />
       <LineId Id="5" Count="0" />
@@ -371,6 +436,14 @@ END_VAR
       <LineId Id="17" Count="1" />
       <LineId Id="7" Count="0" />
       <LineId Id="14" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_axis.SaveBias">
+      <LineId Id="6" Count="27" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="34" Count="2" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="37" Count="3" />
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_axis.Stop">
       <LineId Id="6" Count="5" />

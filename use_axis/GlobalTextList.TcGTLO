@@ -21,8 +21,83 @@
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"176"</v>
+              <v n="TextDefault">"%s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"532"</v>
+              <v n="TextDefault">"bias"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"543"</v>
+              <v n="TextDefault">"bias from Drive"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"488"</v>
+              <v n="TextDefault">"bias saved"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"798"</v>
+              <v n="TextDefault">"bias saved in Drive"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"554"</v>
+              <v n="TextDefault">"bias saved in PLC"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"221"</v>
+              <v n="TextDefault">"by Somebody"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"114"</v>
+              <v n="TextDefault">"Calibration"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"271"</v>
+              <v n="TextDefault">"Current Position"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"659"</v>
+              <v n="TextDefault">"Date"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"205"</v>
+              <v n="TextDefault">"Degree/s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"377"</v>
+              <v n="TextDefault">"Motion"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"696"</v>
+              <v n="TextDefault">"Move Abs"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"403"</v>
               <v n="TextDefault">"Move Relative"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"739"</v>
+              <v n="TextDefault">"Move Relative(360)"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"349"</v>
+              <v n="TextDefault">"Move To Angle:"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -38,6 +113,21 @@
             <o>
               <v n="TextID">"280"</v>
               <v n="TextDefault">"Move Velocity-2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"528"</v>
+              <v n="TextDefault">"on Date"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"541"</v>
+              <v n="TextDefault">"Set Home"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"782"</v>
+              <v n="TextDefault">"Set Home / Save"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>

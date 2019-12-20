@@ -1344,12 +1344,13 @@ External Setpoint Generation:
 				<Axis Id="1" CreateSymbols="true" AxisType="1">
 					<Name>Axis 1</Name>
 					<AxisPara>
-						<Dynamic Acceleration="20971.52" Deceleration="20971.52" Jerk="62914.56"/>
-						<Velo RefSearch="139.810133333333" RefSync="139.810133333333" SlowManual="699.050666666667" FastManual="4194.304" Fast="13981.0133333333" Maximum="13981.0133333333"/>
-						<OtherSettings AllowMotionCmdToSlave="true"/>
+						<General UnitName="Degree"/>
+						<Dynamic Acceleration="72000" Deceleration="72000" Jerk="216000"/>
+						<Velo RefSearch="480" RefSync="480" SlowManual="2400" FastManual="14400" Fast="48000" Maximum="48000"/>
+						<OtherSettings AllowMotionCmdToSlave="true" DataPersistence="true"/>
 					</AxisPara>
 					<Encoder Name="Enc" EncType="8">
-						<EncPara ScaleFactorNumerator="104.8576" ScaleFactorDenominator="1048576" MaxCount="#xffffffff"/>
+						<EncPara ScaleFactorNumerator="360" ScaleFactorDenominator="1048576" Offset="-360.24787902832" MaxCount="#xffffffff" ReferenceSystem="1"/>
 						<Vars VarGrpType="1">
 							<Name>Inputs</Name>
 							<Var>
@@ -1415,7 +1416,7 @@ External Setpoint Generation:
 					</Encoder>
 					<Drive Name="Drive" DrvType="9">
 						<DrvPara MaxCount="#xffffffff" DriveControlDWord="#x00030000">
-							<Analog VeloReferenz="15379.1146666667" VeloScale="1.02398817080127" TorqueScale="10" ScaleFactorActTorque="0.1"/>
+							<Analog VeloReferenz="52800" VeloScale="1.02398817080127" TorqueScale="10" ScaleFactorActTorque="0.1"/>
 							<TimeComp TaskDelayCycles="1"/>
 						</DrvPara>
 						<Vars VarGrpType="1">
@@ -1749,7 +1750,7 @@ External Setpoint Generation:
 					<Vars VarGrpType="1">
 						<Name>PlcTask Inputs</Name>
 						<Var>
-							<Name>MAIN.fbAxis.Axis.NcToPlc</Name>
+							<Name>MAIN.theAxis.NcToPlc</Name>
 							<Type GUID="{6A65C767-34E5-42BF-AD87-E1A503EAC7BE}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
 							<SubVar>
 								<Name>AxisState</Name>
@@ -1795,7 +1796,7 @@ External Setpoint Generation:
 					<Vars VarGrpType="2">
 						<Name>PlcTask Outputs</Name>
 						<Var>
-							<Name>MAIN.fbAxis.Axis.PlcToNc</Name>
+							<Name>MAIN.theAxis.PlcToNc</Name>
 							<Type GUID="{63A84524-72E3-41C8-BEAB-4CCE44690A13}" Namespace="MC">PLCTONC_AXIS_REF</Type>
 						</Var>
 					</Vars>
@@ -1923,7 +1924,11 @@ External Setpoint Generation:
 									</Property>
 									<Property>
 										<Name>NcFeedConstant</Name>
-										<Value>104.857600</Value>
+										<Value>360.000000</Value>
+									</Property>
+									<Property>
+										<Name>NcUnit</Name>
+										<Value>Degree</Value>
 									</Property>
 									<Parametersets>
 										<Parameter>
@@ -2378,9 +2383,6 @@ External Setpoint Generation:
 								<InitCmd DriveNo="0" IDN="32920" MotorDataLevel="1" DisableMode="0"/>
 								<InitCmd DriveNo="0" IDN="32921" MotorDataLevel="1" DisableMode="0"/>
 								<InitCmd DriveNo="0" IDN="32922" MotorDataLevel="1" DisableMode="0"/>
-								<InitCmd DriveNo="0" IDN="33088" MotorDataLevel="0" DisableMode="0">
-									<RetainData>100010006a001b0066000100ec0c3d00ec0c3d00</RetainData>
-								</InitCmd>
 								<InitCmd DriveNo="0" IDN="33093" MotorDataLevel="0" DisableMode="0">
 									<RetainData>16001a004465632020332032303132202c2031313a32303a3134</RetainData>
 								</InitCmd>
@@ -2642,8 +2644,8 @@ External Setpoint Generation:
 		</OwnerA>
 		<OwnerA Name="TIPC^use_axis^use_axis Instance">
 			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis 1">
-				<Link VarA="PlcTask Inputs^MAIN.fbAxis.Axis.NcToPlc" VarB="Outputs^ToPlc"/>
-				<Link VarA="PlcTask Outputs^MAIN.fbAxis.Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+				<Link VarA="PlcTask Inputs^MAIN.theAxis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^MAIN.theAxis.PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>

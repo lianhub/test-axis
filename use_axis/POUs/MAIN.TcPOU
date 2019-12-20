@@ -3,23 +3,49 @@
   <POU Name="MAIN" Id="{9e1c3995-83c8-4182-bd18-563ee53d3d94}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
+	theAxis                  : AXIS_REF;
 	fbAxis: FB_Axis;
 	xState: E_MC_State;
 	state : BYTE;	
 	status : ST_AxisStatus;
 	mcStatus : MC_ReadStatus;
 	velo 	: LREAL;
-	bRunVel	: BOOL;
+	bRunVel	: BOOL;		
+	mcReadParameter     : MC_ReadParameter;
 END_VAR
-]]></Declaration>
+VAR PERSISTENT
+	str		  :	STRING(100):='This is a String';
+	biasSaved : LREAL;
+END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbAxis.Axis.ReadStatus(); //HMI := gHMI.AxisHMI_1
-mcStatus(Axis := fbAxis.Axis, Enable := TRUE, Status=>status);
+      <ST><![CDATA[fbAxis(Axis:=theAxis);
+theAxis.ReadStatus(); //HMI := gHMI.AxisHMI_1
+//mcStatus(Axis := fbAxis.Axis, Enable := TRUE, Status=>status);
+fbAxis.ReadPos(TRUE); gHMI.pos := fbAxis.actPos;
+mcReadParameter(
+		Axis:= theAxis, 
+		Enable:= TRUE, 
+		ParameterNumber:= MC_AxisParameter.AxisEncoderOffset, 
+		ReadMode:= E_ReadMode.READMODE_ONCE
+	);	
+gHMI.bias := mcReadParameter.Value;
+mcReadParameter(
+		Axis:= theAxis, 
+		Enable:= FALSE, 
+		ParameterNumber:= MC_AxisParameter.AxisEncoderOffset, 
+		ReadMode:= E_ReadMode.READMODE_ONCE
+	);	
 
+IF ABS(gHMI.bias - biasSaved) < 2 THEN
+	str	:='Good: Home is calibrated!';
+ELSE		
+	str :='Warning: Home is NOT calibrated!';
+END_IF
+	
 CASE xState OF
 	MCSTATE_Init:		
 		fbAxis.Enable(FALSE);		 
-		IF fbAxis.Axis.Status.Error THEN
+		IF theAxis.Status.Error THEN
 			xState := MCSTATE_Error;
 		ELSE	
 			xState := MCSTATE_PowerOn;
@@ -28,13 +54,17 @@ CASE xState OF
 	MCSTATE_PowerOn:
 		fbAxis.Enable(TRUE);
 		IF fbAxis.power.Done THEN
-			xState := MCSTATE_MoveRel;
+			//xState := MCSTATE_MoveRel;
+			xState := MCSTATE_Idle;
 		END_IF
 		
 	MCSTATE_Idle:		
 		IF gHMI.bMoveRel THEN
 			xState:= MCSTATE_MoveRel;
-		END_IF										
+		END_IF	
+		IF gHMI.bMoveAbs THEN
+			xState:= MCSTATE_MoveAbs;
+		END_IF									
 		IF gHMI.bMoveVel THEN
 			velo := gHMI.vel;		bRunVel := TRUE;			
 			xState:= MCSTATE_MoveVel;  			
@@ -45,6 +75,9 @@ CASE xState OF
 		END_IF
 		IF gHMI.bStop THEN
 			xState:= MCSTATE_Stop;
+		END_IF
+		IF gHMI.bSetHome THEN
+			xState:= SaveBias;
 		END_IF
 		
 	MCSTATE_MoveVel:	
@@ -72,16 +105,44 @@ CASE xState OF
 		END_IF
 				
 	MCSTATE_MoveRel:
-		fbAxis.MoveRel(bExecute:=TRUE,relAngle:=100);		 
+		fbAxis.MoveRel(bExecute:=TRUE, relAngle:=360);		 
 		IF fbAxis.moveRels.Done THEN
-			fbAxis.MoveRel(bExecute:=FALSE,relAngle:=100);	
+			fbAxis.MoveRel(bExecute:=FALSE, relAngle:=360);	
 			xState :=  MCSTATE_Stop;
 		END_IF
+		
+	MCSTATE_MoveAbs:
+		fbAxis.MoveAbs(bExecute:=TRUE, targetAngle:=gHMI.targetAngle, velocityIncline:=720);		 
+		IF fbAxis.moveAbses.Done THEN
+			fbAxis.MoveAbs(bExecute:=FALSE, targetAngle:=gHMI.targetAngle, velocityIncline:=720);
+			xState :=  MCSTATE_Stop;
+		END_IF	
+	
+	SaveBias:		
+		fbAxis.SaveBias();
+		//gHMI.bias := fbAxis.lrPositionBias;			
+		IF fbAxis.diState=0 THEN	
+			//gHMI.bias := fbAxis.lrPositionBias;	
+			biasSaved := fbAxis.lrPositionBias;		
+			xState := MCSTATE_Init;		
+		END_IF		
 END_CASE]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
+      <LineId Id="218" Count="0" />
       <LineId Id="57" Count="1" />
       <LineId Id="104" Count="0" />
+      <LineId Id="245" Count="4" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="251" Count="4" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="257" Count="1" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="256" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="17" Count="0" />
       <LineId Id="20" Count="0" />
@@ -91,11 +152,15 @@ END_CASE]]></ST>
       <LineId Id="24" Count="1" />
       <LineId Id="65" Count="0" />
       <LineId Id="38" Count="0" />
-      <LineId Id="60" Count="4" />
+      <LineId Id="60" Count="2" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="63" Count="1" />
       <LineId Id="34" Count="0" />
       <LineId Id="40" Count="0" />
       <LineId Id="36" Count="0" />
       <LineId Id="33" Count="0" />
+      <LineId Id="173" Count="1" />
+      <LineId Id="172" Count="0" />
       <LineId Id="72" Count="0" />
       <LineId Id="108" Count="0" />
       <LineId Id="73" Count="0" />
@@ -106,7 +171,9 @@ END_CASE]]></ST>
       <LineId Id="105" Count="0" />
       <LineId Id="86" Count="1" />
       <LineId Id="85" Count="0" />
-      <LineId Id="74" Count="0" />
+      <LineId Id="215" Count="1" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="171" Count="0" />
       <LineId Id="69" Count="0" />
       <LineId Id="67" Count="1" />
       <LineId Id="37" Count="0" />
@@ -130,6 +197,17 @@ END_CASE]]></ST>
       <LineId Id="66" Count="0" />
       <LineId Id="32" Count="0" />
       <LineId Id="29" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="176" Count="4" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="208" Count="1" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="207" Count="0" />
       <LineId Id="19" Count="0" />
     </LineIds>
   </POU>

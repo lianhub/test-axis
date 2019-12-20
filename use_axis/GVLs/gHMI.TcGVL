@@ -5,11 +5,16 @@
 VAR_GLOBAL
 	AxisHMI_1: ST_HMI_Axis;
 	bMoveRel : BOOL;
+	bMoveAbs : BOOL;
 	bMoveVel : BOOL;
 	bMoveVel2 : BOOL;
 	bStop : BOOL;
-	vel 	: LREAL:=100;
-	vel2 	: LREAL:=500;
+	vel 	: LREAL:=360;
+	vel2 	: LREAL:=720;
+	pos		: LREAL;
+	targetAngle : LREAL;
+	bias : LREAL;
+	bSetHome : BOOL;
 END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>

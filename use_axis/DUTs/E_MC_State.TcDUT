@@ -20,7 +20,8 @@
 	MCSTATE_Reset,
 	MCSTATE_GearIn,
 	MCSTATE_Geared,
-	MCSTATE_GearOut
+	MCSTATE_GearOut,
+	SaveBias
 );
 
 END_TYPE]]></Declaration>
